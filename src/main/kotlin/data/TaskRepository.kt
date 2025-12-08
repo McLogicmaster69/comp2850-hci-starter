@@ -73,7 +73,7 @@ object TaskRepository {
                 val parts = line.split(",", limit = 5)
                 if (parts.size == 5) {
                     val id = parts[0].toIntOrNull() ?: return@forEach
-                    tasks.add(Task(id, parts[1], parts[2], parts[3], parts[4] as Boolean))
+                    tasks.add(Task(id, parts[1], parts[2], parts[3], parts[4].toBoolean()))
                     idCounter.set(maxOf(idCounter.get(), id + 1))
                 }
             }
@@ -109,6 +109,6 @@ object TaskRepository {
     // - fun update(task: Task)
 
     private fun persist() {
-        file.writeText("id,title,description,priority,completed\n" + tasks.joinToString("\n") { "${it.id},${it.title.replace(",", "")},${it.description.replace(",", "")},${it.priority.replace(",", "")},${it.completed}"})
+        file.writeText("id,title\n" + tasks.joinToString("\n") { "${it.id},${it.title.replace(",", "")},${it.description.replace(",", "")},${it.priority.replace(",", "")},${it.completed}"})
     }
 }

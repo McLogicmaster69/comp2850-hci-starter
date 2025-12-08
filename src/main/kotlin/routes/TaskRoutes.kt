@@ -146,8 +146,10 @@ fun Route.taskRoutes() {
         if (call.isHtmx()) {
             val message = if (removed) "Task deleted." else "Could not delete task."
             val status = """<div id="status" hx-swap-oob="true">$message</div>"""
+
+            val taskAmount = """<h2 id="list-heading" hx-swap-oob="true">Current tasks (${TaskRepository.size})</h2>"""
             // Return empty content to trigger outerHTML swap (removes the <li>)
-            return@post call.respondText(status, ContentType.Text.Html)
+            return@post call.respondText(status + taskAmount, ContentType.Text.Html)
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
@@ -183,7 +185,7 @@ fun Route.taskRoutes() {
                 </form>
             </li>"""
             
-            val message = if (task == null) "An error occured: could not find task." else "Task has been set to ${if (task.completed) "not " else ""}completed."
+            val message = if (task == null) "An error occured: could not find task." else "Task has been set to ${if (task.completed) "" else "not "}completed."
             val status = """<div id="status" hx-swap-oob="true">$message</div>"""
 
             return@post call.respondText(fragment + status, ContentType.Text.Html)
