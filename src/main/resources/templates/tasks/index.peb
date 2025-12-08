@@ -1,7 +1,7 @@
 {% extends "_layout/base.peb" %}
 
 {% block content %}
-<h1>Tasks Yes Yes</h1>
+<h1>Tasks</h1>
 
 <section aria-labelledby="add-heading">
   <h2 id="add-heading">Add a new task</h2>
@@ -27,6 +27,13 @@
         <h2>{{ task.title }}</h2>
         <span>Priority: {{ task.priority }}</span>
         <p>{{ task.description }}</p>
+        <p>Completed: {{ task.completed }}</p>
+        <form action="/tasks/{{ task.id }}/complete" method="post" style="display: inline;"
+              hx-post="/tasks/{{ task.id }}/complete"
+              hx-target="#task-{{ task.id }}"
+              hx-swap="outerHTML">
+          <button type="submit" aria-label="{% if task.completed %}Mark as incomplete{% else %}Mark as complete{% endif %}">{% if task.completed %}Mark as incomplete{% else %}Mark as complete{% endif %}</button>
+        </form>
         <form action="/tasks/{{ task.id }}/delete" method="post" style="display: inline;"
               hx-post="/tasks/{{ task.id }}/delete"
               hx-target="#task-{{ task.id }}"

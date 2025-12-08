@@ -1,1 +1,3 @@
-id,title
+id,title,description,priority,completed
+1,Do something,yes,yessssss,false
+2,Do something,yes,yessssss,false

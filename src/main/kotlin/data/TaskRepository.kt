@@ -43,7 +43,8 @@ data class Task(
     val id: Int,
     var title: String,
     var description: String,
-    var priority: String
+    var priority: String,
+    var completed: Boolean
 )
 
 /**
@@ -57,16 +58,22 @@ object TaskRepository {
     private val tasks = mutableListOf<Task>()
     private val idCounter = AtomicInteger(1)
 
+    public val size: Int
+        get() = this.tasks.size
+
+    public val nullTask : Task
+        get() = Task(-1, "", "", "", false)
+
     init {
         file.parentFile?.mkdirs()
         if (!file.exists()) {
             file.writeText("id,title\n")
         } else {
             file.readLines().drop(1).forEach { line ->
-                val parts = line.split(",", limit = 4)
-                if (parts.size == 4) {
+                val parts = line.split(",", limit = 5)
+                if (parts.size == 5) {
                     val id = parts[0].toIntOrNull() ?: return@forEach
-                    tasks.add(Task(id, parts[1], parts[2], parts[3]))
+                    tasks.add(Task(id, parts[1], parts[2], parts[3], parts[4] as Boolean))
                     idCounter.set(maxOf(idCounter.get(), id + 1))
                 }
             }
@@ -76,7 +83,7 @@ object TaskRepository {
     fun all(): List<Task> = tasks.toList()
 
     fun add(title: String, description : String, priority : String): Task {
-        val task = Task(idCounter.getAndIncrement(), title, description, priority)
+        val task = Task(idCounter.getAndIncrement(), title, description, priority, false)
         tasks.add(task)
         persist()
         return task
@@ -88,6 +95,13 @@ object TaskRepository {
         return removed
     }
 
+    fun get(id : Int) : Task {
+        for (task in tasks) {
+            if (task.id == id) return task
+        }
+        return this.nullTask
+    }
+
     // TODO: Week 7 Lab 1 Activity 2 Step 6
     // Add find() and update() methods here
     // Follow instructions in mdbook to implement:
@@ -95,6 +109,6 @@ object TaskRepository {
     // - fun update(task: Task)
 
     private fun persist() {
-        file.writeText("id,title\n" + tasks.joinToString("\n") { "${it.id},${it.title.replace(",", "")},${it.description.replace(",", "")},${it.priority.replace(",", "")}" })
+        file.writeText("id,title,description,priority,completed\n" + tasks.joinToString("\n") { "${it.id},${it.title.replace(",", "")},${it.description.replace(",", "")},${it.priority.replace(",", "")},${it.completed}"})
     }
 }

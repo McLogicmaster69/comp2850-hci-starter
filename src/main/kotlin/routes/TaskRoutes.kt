@@ -108,6 +108,13 @@ fun Route.taskRoutes() {
                 <h2>${task.title}</h2>
                 <span>Priority: ${task.priority}</span>
                 <p>${task.description}</p>
+                <p>Completed: ${task.completed}</p>
+                <form action="/tasks/${task.id}/complete" method="post" style="display: inline;"
+                    hx-post="/tasks/${task.id}/complete"
+                    hx-target="#task-${task.id}"
+                    hx-swap="outerHTML">
+                <button type="submit" aria-label="Mark as complete">Mark as complete</button>
+                </form>
                 <form action="/tasks/${task.id}/delete" method="post" style="display: inline;"
                       hx-post="/tasks/${task.id}/delete"
                       hx-target="#task-${task.id}"
@@ -118,7 +125,9 @@ fun Route.taskRoutes() {
 
             val status = """<div id="status" hx-swap-oob="true">Task "${task.title}" added successfully.</div>"""
 
-            return@post call.respondText(fragment + status, ContentType.Text.Html, HttpStatusCode.Created)
+            val taskAmount = """<h2 id="list-heading" hx-swap-oob="true">Current tasks (${TaskRepository.size})</h2>"""
+
+            return@post call.respondText(fragment + status + taskAmount, ContentType.Text.Html, HttpStatusCode.Created)
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
@@ -146,10 +155,42 @@ fun Route.taskRoutes() {
         call.respond(HttpStatusCode.SeeOther)
     }
 
-    // TODO: Week 7 Lab 1 Activity 2 Steps 2-5
-    // Add inline edit routes here
-    // Follow instructions in mdbook to implement:
-    // - GET /tasks/{id}/edit - Show edit form (dual-mode)
-    // - POST /tasks/{id}/edit - Save edits with validation (dual-mode)
-    // - GET /tasks/{id}/view - Cancel edit (HTMX only)
+    post("/tasks/{id}/complete") {
+        val id = call.parameters["id"]?.toIntOrNull()
+        val task = id?.let { TaskRepository.get(id) } ?: TaskRepository.nullTask
+
+        if (call.isHtmx()) {
+
+            task.completed = !task.completed
+            val completeMessage = if (task.completed) "Mark as incomplete" else "Mark as complete"
+
+            val fragment = """<li id="task-${task.id}">
+                <h2>${task.title}</h2>
+                <span>Priority: ${task.priority}</span>
+                <p>${task.description}</p>
+                <p>Completed: ${task.completed}</p>
+                <form action="/tasks/${task.id}/complete" method="post" style="display: inline;"
+                    hx-post="/tasks/${task.id}/complete"
+                    hx-target="#task-${task.id}"
+                    hx-swap="outerHTML">
+                <button type="submit" aria-label="${completeMessage}">${completeMessage}</button>
+                </form>
+                <form action="/tasks/${task.id}/delete" method="post" style="display: inline;"
+                      hx-post="/tasks/${task.id}/delete"
+                      hx-target="#task-${task.id}"
+                      hx-swap="outerHTML">
+                  <button type="submit" aria-label="Delete task: ${task.title}">Delete</button>
+                </form>
+            </li>"""
+            
+            val message = if (task == null) "An error occured: could not find task." else "Task has been set to ${if (task.completed) "not " else ""}completed."
+            val status = """<div id="status" hx-swap-oob="true">$message</div>"""
+
+            return@post call.respondText(fragment + status, ContentType.Text.Html)
+        }
+
+        // No-JS: POST-Redirect-GET pattern (303 See Other)
+        call.response.headers.append("Location", "/tasks")
+        call.respond(HttpStatusCode.SeeOther)
+    }
 }
