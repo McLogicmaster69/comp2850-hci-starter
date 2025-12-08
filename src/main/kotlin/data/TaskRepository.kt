@@ -42,6 +42,8 @@ import java.util.concurrent.atomic.AtomicInteger
 data class Task(
     val id: Int,
     var title: String,
+    var description: String,
+    var priority: String
 )
 
 /**
@@ -61,10 +63,10 @@ object TaskRepository {
             file.writeText("id,title\n")
         } else {
             file.readLines().drop(1).forEach { line ->
-                val parts = line.split(",", limit = 2)
-                if (parts.size == 2) {
+                val parts = line.split(",", limit = 4)
+                if (parts.size == 4) {
                     val id = parts[0].toIntOrNull() ?: return@forEach
-                    tasks.add(Task(id, parts[1]))
+                    tasks.add(Task(id, parts[1], parts[2], parts[3]))
                     idCounter.set(maxOf(idCounter.get(), id + 1))
                 }
             }
@@ -73,8 +75,8 @@ object TaskRepository {
 
     fun all(): List<Task> = tasks.toList()
 
-    fun add(title: String): Task {
-        val task = Task(idCounter.getAndIncrement(), title)
+    fun add(title: String, description : String, priority : String): Task {
+        val task = Task(idCounter.getAndIncrement(), title, description, priority)
         tasks.add(task)
         persist()
         return task
@@ -93,6 +95,6 @@ object TaskRepository {
     // - fun update(task: Task)
 
     private fun persist() {
-        file.writeText("id,title\n" + tasks.joinToString("\n") { "${it.id},${it.title}" })
+        file.writeText("id,title\n" + tasks.joinToString("\n") { "${it.id},${it.title.replace(",", "")},${it.description.replace(",", "")},${it.priority.replace(",", "")}" })
     }
 }

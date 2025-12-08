@@ -81,7 +81,10 @@ fun Route.taskRoutes() {
      * Dual-mode: HTMX fragment or PRG redirect
      */
     post("/tasks") {
-        val title = call.receiveParameters()["title"].orEmpty().trim()
+        val parameters = call.receiveParameters()
+        val title = parameters["title"].orEmpty().trim()
+        val description = parameters["description"].orEmpty().trim()
+        val priority = parameters["priority"].orEmpty().trim()
 
         if (title.isBlank()) {
             // Validation error handling
@@ -97,12 +100,14 @@ fun Route.taskRoutes() {
             }
         }
 
-        val task = TaskRepository.add(title)
+        val task = TaskRepository.add(title, description, priority)
 
         if (call.isHtmx()) {
             // Return HTML fragment for new task
             val fragment = """<li id="task-${task.id}">
-                <span>${task.title}</span>
+                <h2>${task.title}</h2>
+                <span>Priority: ${task.priority}</span>
+                <p>${task.description}</p>
                 <form action="/tasks/${task.id}/delete" method="post" style="display: inline;"
                       hx-post="/tasks/${task.id}/delete"
                       hx-target="#task-${task.id}"
