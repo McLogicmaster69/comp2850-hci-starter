@@ -49,12 +49,10 @@
                 <a href="/about"></a>
             </small>
         </p>
-        <p>
-            <small>
-                Session: {{ sessionId }} &bull;
-                Mode: {% if isHtmx %}HTMX{% else %}No-JS{% endif %}
-            </small>
-        </p>
+        <div id="nojs">JavaScript is disabled</div>
+        <script>
+            document.getElementById("nojs").remove()
+        </script>
     </footer>
 </body>
 </html>

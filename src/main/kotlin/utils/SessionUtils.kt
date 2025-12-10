@@ -45,3 +45,5 @@ fun shortSessionId(fullId: String): String = fullId.take(6)
  * @return Request ID string
  */
 fun generateRequestId(): String = "r_${UUID.randomUUID().toString().take(8)}"
+
+fun newReqId(): String = generateRequestId()
