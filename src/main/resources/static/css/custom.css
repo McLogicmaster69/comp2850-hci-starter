@@ -166,7 +166,7 @@ select:focus {
 
 .task-item.completed .task-title {
   text-decoration: line-through;
-  color: var(--pico-muted-color, #666);
+  color: var(--pico-muted-color, #f1f1f1);
 }
 
 .task-content {
@@ -183,7 +183,7 @@ select:focus {
 
 .task-meta {
   display: block;
-  color: var(--pico-muted-color, #666);
+  color: var(--pico-muted-color, #f1f1f1);
   font-size: 0.875rem;
 }
 
@@ -257,15 +257,14 @@ select:focus {
   }
 }
 
-/* ========================================
-   INTENTIONAL ACCESSIBILITY ISSUES
-   (For Week 7 Lab 2 audit exercise)
-   ======================================== */
 
-/* Issue: Button color contrast fails WCAG 1.4.3 (AA)
-   Color #6c757d on white background = 4.2:1 contrast (needs 4.5:1)
-   Students will discover this with axe DevTools and fix in Week 7 Lab 2 */
 button[type="submit"],
 button {
-  color: #6c757d;
+  color: #f1f1f1;
+  margin-bottom: 5px;
+}
+
+a {
+  width: 100%;
+  margin: auto;
 }

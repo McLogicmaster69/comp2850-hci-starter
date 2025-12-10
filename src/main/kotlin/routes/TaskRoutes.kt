@@ -1,6 +1,8 @@
 package routes
 
 import data.TaskRepository
+import data.getFragment
+import data.getEditFragment
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -19,6 +21,9 @@ fun Route.taskRoutes() {
     post("/tasks") { call.handleCreateTask() }
     post("/tasks/{id}/delete") { call.handleDeleteTask() }
     post("/tasks/{id}/complete") { call.handleCompleteTask() }
+    get("/tasks/{id}/edit") { call.handleEditTask() }
+    post("/tasks/{id}/edit") { call.handleUpdateTask() }
+    get("/tasks/{id}/view") { call.handleViewTask() }
 }
 
 private suspend fun ApplicationCall.handleTaskList() {
@@ -69,24 +74,7 @@ private suspend fun ApplicationCall.handleCreateTask() {
 
         if (isHtmx()) {
             // Return HTML fragment for new task
-            val fragment = """<li id="task-${task.id}">
-                <h2>${task.title}</h2>
-                <span>Priority: ${task.priority}</span>
-                <p>${task.description}</p>
-                <p>Completed: ${task.completed}</p>
-                <form action="/tasks/${task.id}/complete" method="post" style="display: inline;"
-                    hx-post="/tasks/${task.id}/complete"
-                    hx-target="#task-${task.id}"
-                    hx-swap="outerHTML">
-                <button type="submit" aria-label="Mark as complete">Mark as complete</button>
-                </form>
-                <form action="/tasks/${task.id}/delete" method="post" style="display: inline;"
-                    hx-post="/tasks/${task.id}/delete"
-                    hx-target="#task-${task.id}"
-                    hx-swap="outerHTML">
-                <button type="submit" aria-label="Delete task: ${task.title}">Delete</button>
-                </form>
-            </li>"""
+            val fragment = getFragment(task)
 
             val status = """<div id="status" hx-swap-oob="true">Task "${task.title}" added successfully.</div>"""
 
@@ -127,28 +115,10 @@ private suspend fun ApplicationCall.handleCompleteTask() {
         val task = id?.let { TaskRepository.get(id) } ?: TaskRepository.nullTask
         task.completed = !task.completed
 
+        TaskRepository.persist()
+
         if (isHtmx()) {
-
-            val completeMessage = if (task.completed) "Mark as incomplete" else "Mark as complete"
-
-            val fragment = """<li id="task-${task.id}">
-                <h2>${task.title}</h2>
-                <span>Priority: ${task.priority}</span>
-                <p>${task.description}</p>
-                <p>Completed: ${task.completed}</p>
-                <form action="/tasks/${task.id}/complete" method="post" style="display: inline;"
-                    hx-post="/tasks/${task.id}/complete"
-                    hx-target="#task-${task.id}"
-                    hx-swap="outerHTML">
-                <button type="submit" aria-label="${completeMessage}">${completeMessage}</button>
-                </form>
-                <form action="/tasks/${task.id}/delete" method="post" style="display: inline;"
-                    hx-post="/tasks/${task.id}/delete"
-                    hx-target="#task-${task.id}"
-                    hx-swap="outerHTML">
-                <button type="submit" aria-label="Delete task: ${task.title}">Delete</button>
-                </form>
-            </li>"""
+            val fragment = getFragment(task)
             
             val message = if (task == null) "An error occured: could not find task." else "Task has been set to ${if (task.completed) "" else "not "}completed."
             val status = """<div id="status" hx-swap-oob="true">$message</div>"""
@@ -162,3 +132,68 @@ private suspend fun ApplicationCall.handleCompleteTask() {
     }
 }
 
+private suspend fun ApplicationCall.handleEditTask() {
+    timed("T4_editView", jsMode()) {
+        val id = parameters["id"]?.toIntOrNull()
+        val task = id?.let { TaskRepository.get(id) } ?: TaskRepository.nullTask
+
+        task.edit = true
+        TaskRepository.persist()
+
+        if (isHtmx()) {
+            val fragment = getEditFragment(task)
+            return@timed respondText(fragment, ContentType.Text.Html)
+        }
+
+        // No-JS: POST-Redirect-GET pattern (303 See Other)
+        response.headers.append("Location", "/tasks")
+        return@timed respond(HttpStatusCode.SeeOther)
+    }
+}
+
+private suspend fun ApplicationCall.handleUpdateTask() {
+    timed("T5_editConfirm", jsMode()) {
+        val formParameters = receiveParameters()
+        val id = parameters["id"]?.toIntOrNull()
+        val title = formParameters["title"].orEmpty().trim()
+        val description = formParameters["description"].orEmpty().trim()
+        val priority = formParameters["priority"].orEmpty().trim()
+        val task = id?.let { TaskRepository.get(id) } ?: TaskRepository.nullTask
+
+        task.title = title
+        task.description = description
+        task.priority = priority
+        task.edit = false
+
+        TaskRepository.persist()
+
+        if (isHtmx()) {
+            val fragment = getFragment(task)
+            return@timed respondText(fragment, ContentType.Text.Html)
+        }
+
+        // No-JS: POST-Redirect-GET pattern (303 See Other)
+        response.headers.append("Location", "/tasks")
+        return@timed respond(HttpStatusCode.SeeOther)
+    }
+}
+
+private suspend fun ApplicationCall.handleViewTask() {
+    timed("T6_view", jsMode()) {
+        println("View")
+        val id = parameters["id"]?.toIntOrNull()
+        val task = id?.let { TaskRepository.get(id) } ?: TaskRepository.nullTask
+
+        task.edit = false
+        TaskRepository.persist()
+
+        if (isHtmx()) {
+            val fragment = getFragment(task)
+            return@timed respondText(fragment, ContentType.Text.Html)
+        }
+
+        // No-JS: POST-Redirect-GET pattern (303 See Other)
+        response.headers.append("Location", "/tasks")
+        return@timed respond(HttpStatusCode.SeeOther)
+    }
+}

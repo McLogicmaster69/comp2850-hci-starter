@@ -13,7 +13,7 @@
     <input type="text" id="title" name="title" required
            placeholder="e.g., Buy milk" aria-describedby="title-hint">
     <small id="title-hint">Keep it short and specific.</small>
-    <input type="text" name="description" placeholder="Description (optional)">
+    <textarea name="description" rows="4" cols="50" placeholder="Description (optional)"></textarea>
     <input type="text" name="priority" placeholder="Priority (optional)">
     <button type="submit">Add Task</button>
   </form>
@@ -23,6 +23,45 @@
   <h2 id="list-heading">Current tasks ({{ tasks | length }})</h2>
   <ul id="task-list">
     {% for task in tasks %}
+    {% if task.edit %}
+      <li id="task-{{ task.id }}" class="task-edit">
+          <form action="/tasks/{{ task.id }}/edit" method="post"
+                  hx-post="/tasks/{{ task.id }}/edit"
+                  hx-target="#task-{{ task.id }}"
+                  hx-swap="outerHTML">
+
+              <label for="title-{{ task.id }}">Title</label>
+              <input type="text"
+                  id="title-{{ task.id }}"
+                  name="title"
+                  value="{{ task.title }}"
+                  required
+                  autofocus
+                  aria-describedby="hint-{{ task.id }}">
+              <small id="hint-{{ task.id }}">Keep it short and specific.</small>
+              <label for="description-{{ task.id }}">Description</label>
+              <textarea
+                  id="description-{{ task.id }}"
+                  rows="4"
+                  cols="50"
+                  name="description">{{ task.description }}</textarea>
+              <label for="priority-{{ task.id }}">Priority</label>
+              <input type="text"
+                  id="priority-{{ task.id }}"
+                  name="priority"
+                  value="{{ task.priority }}">
+              
+              <button type="submit">Save</button>
+
+              <a href="/tasks/{{ task.id }}/view"
+                  hx-get="/tasks/{{ task.id }}/view"
+                  hx-target="#task-{{ task.id }}"
+                  hx-swap="outerHTML"
+                  role="button">Cancel</a>
+          </form>
+          <br>
+      </li>
+    {% else %}
       <li id="task-{{ task.id }}">
         <h2>{{ task.title }}</h2>
         <span>Priority: {{ task.priority }}</span>
@@ -34,13 +73,21 @@
               hx-swap="outerHTML">
           <button type="submit" aria-label="{% if task.completed %}Mark as incomplete{% else %}Mark as complete{% endif %}">{% if task.completed %}Mark as incomplete{% else %}Mark as complete{% endif %}</button>
         </form>
+        <form action="/tasks/{{ task.id }}/edit" method="get" style="display: inline;"
+            hx-get="/tasks/{{ task.id }}/edit"
+            hx-target="#task-{{ task.id }}"
+            hx-swap="outerHTML">
+        <button type="submit" aria-label="Edit task: {{ task.title }}">Edit</button>
+        </form>
         <form action="/tasks/{{ task.id }}/delete" method="post" style="display: inline;"
               hx-post="/tasks/{{ task.id }}/delete"
               hx-target="#task-{{ task.id }}"
               hx-swap="outerHTML">
           <button type="submit" aria-label="Delete task: {{ task.title }}">Delete</button>
         </form>
+        <br>
       </li>
+    {% endif %}
     {% else %}
       <li>No tasks yet. Add one above!</li>
     {% endfor %}
