@@ -1,2 +1,0 @@
-# Keep data directory in Git
-# Actual CSV files are gitignored, but directory structure is preserved
