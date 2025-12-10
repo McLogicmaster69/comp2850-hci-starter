@@ -40,34 +40,34 @@ private suspend fun ApplicationCall.handleTaskList() {
         val template = pebble.getTemplate("tasks/index.peb")
         val writer = StringWriter()
         template.evaluate(writer, model)
-        call.respondText(writer.toString(), ContentType.Text.Html)
+        respondText(writer.toString(), ContentType.Text.Html)
     }
 }
 
 private suspend fun ApplicationCall.handleCreateTask() {
     timed("T1_add", jsMode()) {
-        val parameters = call.receiveParameters()
+        val parameters = receiveParameters()
         val title = parameters["title"].orEmpty().trim()
         val description = parameters["description"].orEmpty().trim()
         val priority = parameters["priority"].orEmpty().trim()
 
         if (title.isBlank()) {
             // Validation error handling
-            if (call.isHtmx()) {
+            if (isHtmx()) {
                 val error = """<div id="status" hx-swap-oob="true" role="alert" aria-live="assertive">
                     Title is required. Please enter at least one character.
                 </div>"""
-                return@post call.respondText(error, ContentType.Text.Html, HttpStatusCode.BadRequest)
+                return@timed respondText(error, ContentType.Text.Html, HttpStatusCode.BadRequest)
             } else {
                 // No-JS: redirect back (could add error query param)
-                call.response.headers.append("Location", "/tasks")
-                return@post call.respond(HttpStatusCode.SeeOther)
+                response.headers.append("Location", "/tasks")
+                return@timed respond(HttpStatusCode.SeeOther)
             }
         }
 
         val task = TaskRepository.add(title, description, priority)
 
-        if (call.isHtmx()) {
+        if (isHtmx()) {
             // Return HTML fragment for new task
             val fragment = """<li id="task-${task.id}">
                 <h2>${task.title}</h2>
@@ -92,42 +92,42 @@ private suspend fun ApplicationCall.handleCreateTask() {
 
             val taskAmount = """<h2 id="list-heading" hx-swap-oob="true">Current tasks (${TaskRepository.size})</h2>"""
 
-            return@post call.respondText(fragment + status + taskAmount, ContentType.Text.Html, HttpStatusCode.Created)
+            return@timed respondText(fragment + status + taskAmount, ContentType.Text.Html, HttpStatusCode.Created)
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
-        call.response.headers.append("Location", "/tasks")
-        call.respond(HttpStatusCode.SeeOther)
+        response.headers.append("Location", "/tasks")
+        return@timed respond(HttpStatusCode.SeeOther)
     }
 }
 
 private suspend fun ApplicationCall.handleDeleteTask() {
     timed("T2_delete", jsMode()) {
-        val id = call.parameters["id"]?.toIntOrNull()
+        val id = parameters["id"]?.toIntOrNull()
         val removed = id?.let { TaskRepository.delete(it) } ?: false
 
-        if (call.isHtmx()) {
+        if (isHtmx()) {
             val message = if (removed) "Task deleted." else "Could not delete task."
             val status = """<div id="status" hx-swap-oob="true">$message</div>"""
 
             val taskAmount = """<h2 id="list-heading" hx-swap-oob="true">Current tasks (${TaskRepository.size})</h2>"""
             // Return empty content to trigger outerHTML swap (removes the <li>)
-            return@post call.respondText(status + taskAmount, ContentType.Text.Html)
+            return@timed respondText(status + taskAmount, ContentType.Text.Html)
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
-        call.response.headers.append("Location", "/tasks")
-        call.respond(HttpStatusCode.SeeOther)
+        response.headers.append("Location", "/tasks")
+        return@timed respond(HttpStatusCode.SeeOther)
     }
 }
 
 private suspend fun ApplicationCall.handleCompleteTask() {
     timed("T3_complete", jsMode()) {
-        val id = call.parameters["id"]?.toIntOrNull()
+        val id = parameters["id"]?.toIntOrNull()
         val task = id?.let { TaskRepository.get(id) } ?: TaskRepository.nullTask
         task.completed = !task.completed
 
-        if (call.isHtmx()) {
+        if (isHtmx()) {
 
             val completeMessage = if (task.completed) "Mark as incomplete" else "Mark as complete"
 
@@ -153,12 +153,12 @@ private suspend fun ApplicationCall.handleCompleteTask() {
             val message = if (task == null) "An error occured: could not find task." else "Task has been set to ${if (task.completed) "" else "not "}completed."
             val status = """<div id="status" hx-swap-oob="true">$message</div>"""
 
-            return@post call.respondText(fragment + status, ContentType.Text.Html)
+            return@timed respondText(fragment + status, ContentType.Text.Html)
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
-        call.response.headers.append("Location", "/tasks")
-        call.respond(HttpStatusCode.SeeOther)
+        response.headers.append("Location", "/tasks")
+        return@timed respond(HttpStatusCode.SeeOther)
     }
 }
 
