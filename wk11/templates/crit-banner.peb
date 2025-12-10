@@ -1,6 +1,0 @@
-{% if mode == "nojs" %}
-<div role="status" aria-live="polite" class="contrast">
-  JS disabled demo — full page flow in effect.
-</div>
-{% endif %}
-

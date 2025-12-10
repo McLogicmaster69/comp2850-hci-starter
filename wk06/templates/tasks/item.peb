@@ -1,7 +1,0 @@
-<li id="task-{{ t.id }}">
-  <span>{{ t.title }}</span>
-  <form action="/tasks/{{ t.id }}/delete" method="post" style="display:inline"
-        hx-post="/tasks/{{ t.id }}/delete" hx-target="#task-{{ t.id }}" hx-swap="outerHTML">
-    <button>Delete</button>
-  </form>
-</li>

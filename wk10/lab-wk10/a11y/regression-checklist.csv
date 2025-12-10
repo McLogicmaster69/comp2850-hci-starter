@@ -1,8 +1,0 @@
-check,item,pass,notes
-Keyboard,All actions possible with keyboard only,,
-Keyboard,Focus order logical; no traps; visible focus,,
-Forms,Errors linked via aria-describedby (field & summary),,
-Dynamic,Status/messages announced via role="status",,
-No-JS,Full-page path equivalent to HTMX path,,
-Visual,Contrast AA; 200% zoom ok,,
-

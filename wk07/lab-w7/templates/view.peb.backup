@@ -1,8 +1,0 @@
-<li id="task-{{ t.id }}">
-  <span>{{ t.title }}</span>
-  <form action="/tasks/{{ t.id }}/edit" method="get"
-        hx-get="/tasks/{{ t.id }}/edit" hx-target="#task-{{ t.id }}" hx-swap="outerHTML">
-    <button>Edit</button>
-  </form>
-</li>
-

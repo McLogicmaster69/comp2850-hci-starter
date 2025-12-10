@@ -1,9 +1,0 @@
-<section aria-labelledby="proof">
-  <h2 id="proof">Proof artefacts</h2>
-  <ul>
-    <li><a href="/analysis/pre">Pre-change summary</a></li>
-    <li><a href="/analysis/post">Post-change summary</a></li>
-    <li><a href="/a11y/checklist">A11y checklist</a></li>
-  </ul>
-</section>
-
