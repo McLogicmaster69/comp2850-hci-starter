@@ -56,6 +56,7 @@ fun getEditFragment(task : Task, swap : Boolean = false) : String =
                 value="${task.title}"
                 required
                 autofocus
+                autocomplete="off"
                 aria-describedby="hint-${task.id}">
             <small id="hint-${task.id}">Keep it short and specific.</small>
             <label for="description-${task.id}">Description</label>

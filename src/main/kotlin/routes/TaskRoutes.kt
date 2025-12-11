@@ -80,7 +80,9 @@ private suspend fun ApplicationCall.handleCreateTask() {
 
             val taskAmount = """<h2 id="list-heading" hx-swap-oob="true">Current tasks (${TaskRepository.size})</h2>"""
 
-            return@timed respondText(fragment + status + taskAmount, ContentType.Text.Html, HttpStatusCode.Created)
+            val noTaskMsg = """<li id="notasksmsg" hx-swap-oob="true"></li>"""
+
+            return@timed respondText(fragment + status + taskAmount + noTaskMsg, ContentType.Text.Html, HttpStatusCode.Created)
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
@@ -95,12 +97,16 @@ private suspend fun ApplicationCall.handleDeleteTask() {
         val removed = id?.let { TaskRepository.delete(it) } ?: false
 
         if (isHtmx()) {
+
             val message = if (removed) "Task deleted." else "Could not delete task."
+
             val status = """<div id="status" hx-swap-oob="true">$message</div>"""
 
             val taskAmount = """<h2 id="list-heading" hx-swap-oob="true">Current tasks (${TaskRepository.size})</h2>"""
-            // Return empty content to trigger outerHTML swap (removes the <li>)
-            return@timed respondText(status + taskAmount, ContentType.Text.Html)
+
+            val noTaskMsg = """<li id="notasksmsg" hx-swap-oob="true">${if (TaskRepository.size == 0) "No tasks yet. Add one above!" else ""}</li>"""
+            
+            return@timed respondText(status + taskAmount + noTaskMsg, ContentType.Text.Html)
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
@@ -127,7 +133,7 @@ private suspend fun ApplicationCall.handleCompleteTask() {
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
-        response.headers.append("Location", "/tasks")
+        response.headers.append("Location", "/tasks#task-${id}")
         return@timed respond(HttpStatusCode.SeeOther)
     }
 }
@@ -146,7 +152,7 @@ private suspend fun ApplicationCall.handleEditTask() {
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
-        response.headers.append("Location", "/tasks")
+        response.headers.append("Location", "/tasks#task-${id}")
         return@timed respond(HttpStatusCode.SeeOther)
     }
 }
@@ -173,7 +179,7 @@ private suspend fun ApplicationCall.handleUpdateTask() {
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
-        response.headers.append("Location", "/tasks")
+        response.headers.append("Location", "/tasks#task-${id}")
         return@timed respond(HttpStatusCode.SeeOther)
     }
 }
@@ -193,7 +199,7 @@ private suspend fun ApplicationCall.handleViewTask() {
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
-        response.headers.append("Location", "/tasks")
+        response.headers.append("Location", "/tasks#task-${id}")
         return@timed respond(HttpStatusCode.SeeOther)
     }
 }
