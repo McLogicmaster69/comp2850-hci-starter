@@ -5,7 +5,7 @@
 
 <section aria-labelledby="add-heading">
   <h2 id="add-heading">Add a new task</h2>
-  <form action="/tasks" method="post"
+  <form action="/tasks" id="new-task-form" method="post"
         hx-post="/tasks"
         hx-target="#task-list"
         hx-swap="beforeend">

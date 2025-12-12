@@ -83,6 +83,22 @@ fun getEditFragment(task : Task, swap : Boolean = false) : String =
     </li>
     """
 
+fun getInputForm() : String =
+    """
+    <form action="/tasks" id="new-task-form" hx-swap-oob="true" method="post"
+            hx-post="/tasks"
+            hx-target="#task-list"
+            hx-swap="beforeend">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" required autocomplete="off"
+            placeholder="e.g., Buy milk" aria-describedby="title-hint">
+        <small id="title-hint">Keep it short and specific.</small>
+        <textarea name="description" rows="4" cols="50" placeholder="Description (optional)"></textarea>
+        <input type="text" name="priority" placeholder="Priority (optional)">
+        <button autofocus type="submit">Add Task</button>
+    </form>
+    """
+
 object TaskRepository {
     private val file = File("data/tasks.csv")
     private val tasks = mutableListOf<Task>()

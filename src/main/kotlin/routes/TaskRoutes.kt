@@ -3,6 +3,7 @@ package routes
 import data.TaskRepository
 import data.getFragment
 import data.getEditFragment
+import data.getInputForm
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -82,7 +83,9 @@ private suspend fun ApplicationCall.handleCreateTask() {
 
             val noTaskMsg = """<li id="notasksmsg" hx-swap-oob="true"></li>"""
 
-            return@timed respondText(fragment + status + taskAmount + noTaskMsg, ContentType.Text.Html, HttpStatusCode.Created)
+            val inputForm = getInputForm()
+
+            return@timed respondText(fragment + status + taskAmount + noTaskMsg + inputForm, ContentType.Text.Html, HttpStatusCode.Created)
         }
 
         // No-JS: POST-Redirect-GET pattern (303 See Other)
@@ -174,7 +177,7 @@ private suspend fun ApplicationCall.handleUpdateTask() {
         TaskRepository.persist()
 
         if (isHtmx()) {
-            val fragment = getFragment(task)
+            val fragment = getFragment(task, true)
             return@timed respondText(fragment, ContentType.Text.Html)
         }
 
@@ -194,7 +197,7 @@ private suspend fun ApplicationCall.handleViewTask() {
         TaskRepository.persist()
 
         if (isHtmx()) {
-            val fragment = getFragment(task)
+            val fragment = getFragment(task, true)
             return@timed respondText(fragment, ContentType.Text.Html)
         }
 
