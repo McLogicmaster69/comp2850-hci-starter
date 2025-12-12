@@ -12,7 +12,7 @@ data class Task(
     var edit: Boolean
 )
 
-fun getFragment(task : Task) : String = 
+fun getFragment(task : Task, focusCompleteButton : Boolean = false) : String = 
     """
     <li id="task-${task.id}">
         <h2>${task.title}</h2>
@@ -23,7 +23,7 @@ fun getFragment(task : Task) : String =
             hx-post="/tasks/${task.id}/complete"
             hx-target="#task-${task.id}"
             hx-swap="outerHTML">
-        <button type="submit" aria-label="${if (task.completed) "Mark as incomplete" else "Mark as complete"}">${if (task.completed) "Mark as incomplete" else "Mark as complete"}</button>
+        <button type="submit" ${if (focusCompleteButton) "autofocus" else ""} aria-label="${if (task.completed) "Mark as incomplete" else "Mark as complete"}">${if (task.completed) "Mark as incomplete" else "Mark as complete"}</button>
         </form>
         <form action="/tasks/${task.id}/edit" method="get" style="display: inline;"
             hx-get="/tasks/${task.id}/edit"
@@ -37,7 +37,7 @@ fun getFragment(task : Task) : String =
             hx-swap="outerHTML">
         <button type="submit" aria-label="Delete task: ${task.title}">Delete</button>
         </form>
-        <br>
+        <br><br>
     </li>
     """
 

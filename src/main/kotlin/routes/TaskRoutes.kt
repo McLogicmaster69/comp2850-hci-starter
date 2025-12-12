@@ -124,7 +124,7 @@ private suspend fun ApplicationCall.handleCompleteTask() {
         TaskRepository.persist()
 
         if (isHtmx()) {
-            val fragment = getFragment(task)
+            val fragment = getFragment(task, true)
             
             val message = if (task == null) "An error occured: could not find task." else "Task has been set to ${if (task.completed) "" else "not "}completed."
             val status = """<div id="status" hx-swap-oob="true">$message</div>"""

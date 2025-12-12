@@ -15,6 +15,16 @@
   margin-left: 10px;
 }
 
+*:focus-visible {
+  outline: 3px solid #FF8000 !important;
+  outline-offset: 3px !important;
+}
+
+li {
+  list-style: none !important;
+  list-style-type: none !important;
+}
+
 /* ========================================
    Skip Link (WCAG 2.4.1)
    ======================================== */

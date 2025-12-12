@@ -86,7 +86,7 @@
               hx-swap="outerHTML">
           <button type="submit" aria-label="Delete task: {{ task.title }}">Delete</button>
         </form>
-        <br>
+        <br><br>
       </li>
     {% endif %}      
     {% endfor %}
